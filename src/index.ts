@@ -33,9 +33,9 @@ const _isArray = <T>(obj: unknown, key: string, next: (item: T extends (infer U)
     return obj as T;
 }
 
-const _isObject = <T>(obj: ObjectAny, next: (obj: ObjectAny) => T) => {
+const _isObject = <T>(obj: ObjectAny, key: string, next: (obj: ObjectAny) => T) => {
     if (typeof obj !== "object") {
-        throw new FieldTypeMismatchError("object", Type.Object, obj);
+        throw new FieldTypeMismatchError(key, Type.Object, obj);
     }
     return next(obj);
 }
@@ -157,7 +157,7 @@ const _fieldChecker = <T extends Rule>(value: unknown, key: string, type: Type, 
             return _isBool(value, key);
         case Type.Object:
             if (rule) {
-                return _isObject(value as ObjectAny, (o) => _objectFieldChecker(rule, o, strict, key));
+                return _isObject(value as ObjectAny, key, (o) => _objectFieldChecker(rule, o, strict, key));
             } else {
                 throw new Error(`Object type for key ${key} must have a rule defined`);
             }
