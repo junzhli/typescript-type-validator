@@ -1,4 +1,4 @@
 
 # Typescript type validator
 
-A fully tyepscript supported type validator to perform checks at both transpile time and runtime with given input
+A fully TypeScript-supported type validator that enables type checks at both transpile time and runtime using a flexible schema and input validation.
