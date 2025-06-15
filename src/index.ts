@@ -177,7 +177,6 @@ const _objectFieldChecker = <T extends Rule>(rule: T, obj: ObjectAny, strict: bo
             throw new UnexpectedFieldError(unexpectedKeys[0]);
         }
     }
-    const result: ObjectAny = {};
     for (const key of Object.keys(rule)) {
         const { __optional: isOptional, type } = rule[key];
         if (isOptional === true && obj?.[key] === undefined) {
@@ -189,11 +188,11 @@ const _objectFieldChecker = <T extends Rule>(rule: T, obj: ObjectAny, strict: bo
             case Type.Number:
             case Type.Bool:
             case Type.Object:
-                result[key] = _fieldChecker(obj?.[key], _key, type, strict, rule[key].rule);
+                _fieldChecker(obj?.[key], _key, type, strict, rule[key].rule);
                 break;
             case Type.Array:
                 { const field = rule[key].field;
-                result[key] = _isArray<
+                _isArray<
                     (typeof field extends { type: infer O; rule: infer P } 
                         ? O extends Type.Object
                             ? InferFromRule<P>
@@ -209,7 +208,7 @@ const _objectFieldChecker = <T extends Rule>(rule: T, obj: ObjectAny, strict: bo
                 throw new Error(`Unknown type for rule key ${key}`);
         }
     }
-    return result as InferFromRule<T>;
+    return obj as InferFromRule<T>;
 }
 
 
