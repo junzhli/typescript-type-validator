@@ -89,7 +89,7 @@ type TypeMap = {
     [Type.String]: string;
     [Type.Number]: number;
     [Type.Bool]: boolean;
-    [Type.Object]: Rule;
+    [Type.Object]: never;
     [Type.Array]: never;
 }
 
