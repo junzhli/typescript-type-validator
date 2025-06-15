@@ -41,11 +41,11 @@ const _isObject = <T>(obj: ObjectAny, next: (obj: ObjectAny) => T) => {
 }
 
 export enum Type {
-    String,
-    Number,
-    Bool,
-    Object,
-    Array,
+    String = "String",
+    Number = "Number",
+    Bool = "Bool",
+    Object = "Object",
+    Array = "Array",
 }
 
 type FieldTypesWithObject = FieldTypes | Type.Object;
