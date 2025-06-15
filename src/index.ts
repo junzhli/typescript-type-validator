@@ -50,15 +50,15 @@ export enum Type {
 
 type FieldTypesWithObject = FieldTypes | Type.Object;
 
-type Optional<T extends FieldTypesWithObject, U extends Rule = never> = { __optional: true; type: T, rule: U }
-type Required<T extends FieldTypesWithObject, U extends Rule = never> = { __optional: false; type: T; rule: U }
-type Field<T extends FieldTypesWithObject, U extends Rule = never> = { __optional: boolean; type: T; rule: U }
+type Optional<T extends FieldTypesWithObject, U extends Schema = never> = { __optional: true; type: T, schema: U }
+type Required<T extends FieldTypesWithObject, U extends Schema = never> = { __optional: false; type: T; schema: U }
+type Field<T extends FieldTypesWithObject, U extends Schema = never> = { __optional: boolean; type: T; schema: U }
 
 
 
-type OptionalArray<T extends FieldTypesWithObject, U extends Rule = never> = { __optional: true; type: Type.Array, field: Required<T, U> };
-type RequiredArray<T extends FieldTypesWithObject, U extends Rule = never> = { __optional: false; type: Type.Array, field: Required<T, U> };
-type ArrayField<T extends FieldTypesWithObject, U extends Rule = never> = { __optional: boolean; type: Type.Array, field: Required<T, U> };
+type OptionalArray<T extends FieldTypesWithObject, U extends Schema = never> = { __optional: true; type: Type.Array, field: Required<T, U> };
+type RequiredArray<T extends FieldTypesWithObject, U extends Schema = never> = { __optional: false; type: Type.Array, field: Required<T, U> };
+type ArrayField<T extends FieldTypesWithObject, U extends Schema = never> = { __optional: boolean; type: Type.Array, field: Required<T, U> };
 
 
 type FieldTypes = Type.Bool | Type.Number | Type.String;
@@ -66,23 +66,23 @@ type FieldTypes = Type.Bool | Type.Number | Type.String;
 function field<T extends FieldTypes>(type: T, optional?: false): Required<T>;
 function field<T extends FieldTypes>(type: T, optional: true): Optional<T>;
 function field<T extends FieldTypes>(type: T, optional: boolean = false): Field<T> {
-    return { __optional: optional, type, rule: undefined as never };
+    return { __optional: optional, type, schema: undefined as never };
 }
 
-function objectField<T extends Rule>(rule: T, optional?: false): Required<Type.Object, T>;
-function objectField<T extends Rule>(rule: T, optional: true): Optional<Type.Object, T>;
-function objectField<T extends Rule>(rule: T, optional: boolean = false): Field<Type.Object, T> {
-    return { __optional: optional, type: Type.Object, rule };
+function objectField<T extends Schema>(schema: T, optional?: false): Required<Type.Object, T>;
+function objectField<T extends Schema>(schema: T, optional: true): Optional<Type.Object, T>;
+function objectField<T extends Schema>(schema: T, optional: boolean = false): Field<Type.Object, T> {
+    return { __optional: optional, type: Type.Object, schema };
 }
 
-function arrayField<V extends Rule, U extends FieldTypesWithObject, T extends Required<U, V>>(field: T, optional: true): OptionalArray<T["type"], T["rule"]>;
-function arrayField<V extends Rule, U extends FieldTypesWithObject, T extends Required<U, V>>(field: T, optional?: false): RequiredArray<T["type"], T["rule"]>;
-function arrayField<V extends Rule, U extends FieldTypesWithObject, T extends Required<U, V>>(field: T, optional: boolean = false): ArrayField<T["type"], T["rule"]> {
+function arrayField<V extends Schema, U extends FieldTypesWithObject, T extends Required<U, V>>(field: T, optional: true): OptionalArray<T["type"], T["schema"]>;
+function arrayField<V extends Schema, U extends FieldTypesWithObject, T extends Required<U, V>>(field: T, optional?: false): RequiredArray<T["type"], T["schema"]>;
+function arrayField<V extends Schema, U extends FieldTypesWithObject, T extends Required<U, V>>(field: T, optional: boolean = false): ArrayField<T["type"], T["schema"]> {
     return { __optional: optional, type: Type.Array, field };
 }
 
-interface Rule {
-    [key: string]: Field<FieldTypes> | Field<Type.Object, Rule> | ArrayField<FieldTypes> | ArrayField<Type.Object, Rule>;
+interface Schema {
+    [key: string]: Field<FieldTypes> | Field<Type.Object, Schema> | ArrayField<FieldTypes> | ArrayField<Type.Object, Schema>;
 }
 
 type TypeMap = {
@@ -93,13 +93,13 @@ type TypeMap = {
     [Type.Array]: never;
 }
 
-type InferFromRule<R> = {
+type InferFromSchema<R> = {
     // Optional properties
     [K in keyof R as R[K] extends { __optional: true } ? K : never]?:
         R[K] extends { field: infer U }
-            ? U extends { type: infer U2, rule: infer Q }
+            ? U extends { type: infer U2, schema: infer Q }
                 ? U2 extends Type.Object
-                    ? InferFromRule<Q>[]
+                    ? InferFromSchema<Q>[]
                 : U2 extends FieldTypes
                     ? (TypeMap[U2])[]
                 : never
@@ -108,9 +108,9 @@ type InferFromRule<R> = {
                     ? (TypeMap[U])[]
                     : never
             : never
-        : R[K] extends { type: infer U, rule: infer Q }
+        : R[K] extends { type: infer U, schema: infer Q }
             ? U extends Type.Object
-                ? InferFromRule<Q>
+                ? InferFromSchema<Q>
             : U extends FieldTypes
                 ? TypeMap[U]
             : never
@@ -123,9 +123,9 @@ type InferFromRule<R> = {
     // Required properties
     [K in keyof R as R[K] extends { __optional: false } ? K : never]:
         R[K] extends { field: infer U }
-            ? U extends { type: infer U2, rule: infer Q }
+            ? U extends { type: infer U2, schema: infer Q }
                 ? U2 extends Type.Object
-                    ? InferFromRule<Q>[]
+                    ? InferFromSchema<Q>[]
                 : U2 extends FieldTypes
                     ? TypeMap[U2][]
                 : never
@@ -134,9 +134,9 @@ type InferFromRule<R> = {
                     ? TypeMap[U][]
                     : never
             : never
-        : R[K] extends { type: infer U, rule: infer Q }
+        : R[K] extends { type: infer U, schema: infer Q }
             ? U extends Type.Object
-                ? InferFromRule<Q>
+                ? InferFromSchema<Q>
             : U extends FieldTypes
                 ? TypeMap[U]
             : never
@@ -147,7 +147,7 @@ type InferFromRule<R> = {
             : never;
 };
 
-const _fieldChecker = <T extends Rule>(value: unknown, key: string, type: Type, strict: boolean, rule: T) => {
+const _fieldChecker = <T extends Schema>(value: unknown, key: string, type: Type, strict: boolean, schema: T) => {
     switch (type) {
         case Type.String:
             return _isString(value, key);
@@ -156,10 +156,10 @@ const _fieldChecker = <T extends Rule>(value: unknown, key: string, type: Type, 
         case Type.Bool:
             return _isBool(value, key);
         case Type.Object:
-            if (rule) {
-                return _isObject(value as ObjectAny, key, (o) => _objectFieldChecker(rule, o, strict, key));
+            if (schema) {
+                return _isObject(value as ObjectAny, key, (o) => _objectFieldChecker(schema, o, strict, key));
             } else {
-                throw new Error(`Object type for key ${key} must have a rule defined`);
+                throw new Error(`Object type for key ${key} must have a schema defined`);
             }
         default:
             throw new Error(`Unknown type for key ${key}`);
@@ -168,17 +168,17 @@ const _fieldChecker = <T extends Rule>(value: unknown, key: string, type: Type, 
 
 type ObjectAny = { [key: string]: unknown };
 
-const _objectFieldChecker = <T extends Rule>(rule: T, obj: ObjectAny, strict: boolean = false, rootKey?: string) => {
+const _objectFieldChecker = <T extends Schema>(schema: T, obj: ObjectAny, strict: boolean = false, rootKey?: string) => {
     if (strict) {
-        const expectedKeys = Object.keys(rule);
+        const expectedKeys = Object.keys(schema);
         const actualKeys = Object.keys(obj);
         const unexpectedKeys = actualKeys.filter(key => !expectedKeys.includes(key));
         if (unexpectedKeys.length > 0) {
             throw new UnexpectedFieldError(unexpectedKeys[0]);
         }
     }
-    for (const key of Object.keys(rule)) {
-        const { __optional: isOptional, type } = rule[key];
+    for (const key of Object.keys(schema)) {
+        const { __optional: isOptional, type } = schema[key];
         if (isOptional === true && obj?.[key] === undefined) {
             continue;
         }
@@ -188,27 +188,27 @@ const _objectFieldChecker = <T extends Rule>(rule: T, obj: ObjectAny, strict: bo
             case Type.Number:
             case Type.Bool:
             case Type.Object:
-                _fieldChecker(obj?.[key], _key, type, strict, rule[key].rule);
+                _fieldChecker(obj?.[key], _key, type, strict, schema[key].schema);
                 break;
             case Type.Array:
-                { const field = rule[key].field;
+                { const field = schema[key].field;
                 _isArray<
-                    (typeof field extends { type: infer O; rule: infer P } 
+                    (typeof field extends { type: infer O; schema: infer P } 
                         ? O extends Type.Object
-                            ? InferFromRule<P>
+                            ? InferFromSchema<P>
                         : O extends FieldTypes
                             ? TypeMap[O]
                             : never
                         : never)[]
                     >(obj?.[key], _key, (o, index) => {
-                    return _fieldChecker(o, `${_key}[${index}]`, field.type, strict, field.rule);
+                    return _fieldChecker(o, `${_key}[${index}]`, field.type, strict, field.schema);
                 });
                 break; }
             default:
-                throw new Error(`Unknown type for rule key ${key}`);
+                throw new Error(`Unknown type for schema key ${key}`);
         }
     }
-    return obj as InferFromRule<T>;
+    return obj as InferFromSchema<T>;
 }
 
 
@@ -217,12 +217,12 @@ const _checkObject = <T>(obj: ObjectAny, checker: (obj: ObjectAny) => T): T => {
     return checker(obj);
 }
 
-class Validator<T extends Rule> {
-    private rule: T;
+class Validator<T extends Schema> {
+    private schema: T;
 
-    public static validate<T extends Rule>(rule: T, obj: ObjectAny, strict: boolean = false) {
+    public static validate<T extends Schema>(schema: T, obj: ObjectAny, strict: boolean = false) {
         try {
-            return _checkObject<InferFromRule<T>>(obj, (o) => _objectFieldChecker(rule, o, strict));
+            return _checkObject<InferFromSchema<T>>(obj, (o) => _objectFieldChecker(schema, o, strict));
         } catch (error) {
             if (isFieldValidationError(error)) {
                 throw new ValidationError(error);
@@ -231,18 +231,18 @@ class Validator<T extends Rule> {
         }
     }
 
-    constructor(rule: T) {
-        this.rule = rule;
+    constructor(schema: T) {
+        this.schema = schema;
     }
 
-    public validate(obj: ObjectAny, strict: boolean = false): InferFromRule<T> {
-        return Validator.validate(this.rule, obj, strict);
+    public validate(obj: ObjectAny, strict: boolean = false): InferFromSchema<T> {
+        return Validator.validate(this.schema, obj, strict);
     }
 }
 
 export {
     Validator,
-    InferFromRule,
+    InferFromSchema,
     objectField,
     field,
     arrayField,
