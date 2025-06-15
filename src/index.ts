@@ -218,8 +218,8 @@ const _checkObject = <T>(obj: ObjectAny, checker: (obj: ObjectAny) => T): T => {
     return checker(obj);
 }
 
-class Validator {
-    private rule: Rule;
+class Validator<T extends Rule> {
+    private rule: T;
     private strict: boolean;
 
     public static validate<T extends Rule>(rule: T, obj: ObjectAny, strict: boolean = false) {
@@ -233,12 +233,12 @@ class Validator {
         }
     }
 
-    constructor(rule: Rule, strict: boolean = false) {
+    constructor(rule: T, strict: boolean = false) {
         this.rule = rule;
         this.strict = strict;
     }
 
-    public validate(obj: ObjectAny): InferFromRule<Rule> {
+    public validate(obj: ObjectAny): InferFromRule<T> {
         return Validator.validate(this.rule, obj, this.strict);
     }
 }
