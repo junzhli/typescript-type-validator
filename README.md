@@ -121,8 +121,8 @@ You can define custom fields using your own resolver functions. The resolver rec
 import { customField, Validator, TypeFromSchema } from "typescript-type-validator";
 
 const schema = {
-  evenNumber: customField((val) => {
-    if (typeof val !== "number" || val % 2 !== 0) throw new Error("Not an even number");
+  evenNumber: customField((val, key) => {
+    if (typeof val !== "number" || val % 2 !== 0) throw new Error(`Not an even number under key: ${key}`);
     return val; // must return the original value
   }),
 };
