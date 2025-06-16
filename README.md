@@ -1,4 +1,3 @@
-
 # Typescript type validator
 
 A fully TypeScript-supported type validator that enables type checks at both transpile time and runtime using a flexible schema and input validation.
@@ -11,6 +10,7 @@ A fully TypeScript-supported type validator that enables type checks at both tra
 * Nested Objects and Arrays
 * Reusable Validators
 * Strict Mode Validation
+* Custom Type Field Validation
 
 ## Installation
 ```shell
@@ -113,10 +113,31 @@ const validUser = userValidator.validate({
 });
 ```
 
+## 6. Custom Type Field Validation
+
+You can define custom fields using your own resolver functions. The resolver receives the input value and must return the (possibly validated or transformed) value. The return type will be inferred automatically.
+
+```typescript
+import { customField, Validator, TypeFromSchema } from "typescript-type-validator";
+
+const schema = {
+  evenNumber: customField((val) => {
+    if (typeof val !== "number" || val % 2 !== 0) throw new Error("Not an even number");
+    return val; // must return the original value
+  }),
+};
+
+type CustomType = TypeFromSchema<typeof schema>;
+// CustomType is: { evenNumber: number }
+
+Validator.validate(schema, { evenNumber: 4 }); // OK
+Validator.validate(schema, { evenNumber: 3 }); // Throws error
+```
+
 ---
 
 **Exports available:**
-- `field`, `objectField`, `arrayField` — for schema definition
+- `field`, `objectField`, `arrayField`, `customField` — for schema definition
 - `Type` — enum for field types
 - `TypeFromSchema` — type inference from schema
 - `Validator` — class and static method for validation
