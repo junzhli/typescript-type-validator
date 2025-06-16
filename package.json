@@ -10,6 +10,14 @@
     "type": "git",
     "url": "git+https://github.com/junzhli/typescript-type-validator.git"
   },
+  "keywords": [
+    "typesafe",
+    "validate",
+    "validator",
+    "json",
+    "schema",
+    "typescript"
+  ],
   "type": "module",
   "dependencies": {
     "tslint": "^6.1.3",
