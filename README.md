@@ -3,6 +3,13 @@
 
 A fully TypeScript-supported type validator that enables type checks at both transpile time and runtime using a flexible schema and input validation.
 
+## Features
+* Type-Safe Schema Definition
+* Automatic Type Inference
+* Runtime Validation
+* Optional and Required Fields
+* Nested Objects and Arrays
+* Reusable Validators
 
 ## Installation
 ```shell
