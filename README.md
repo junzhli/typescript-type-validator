@@ -10,6 +10,7 @@ A fully TypeScript-supported type validator that enables type checks at both tra
 * Optional and Required Fields
 * Nested Objects and Arrays
 * Reusable Validators
+* Strict Mode Validation
 
 ## Installation
 ```shell
