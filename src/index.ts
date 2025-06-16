@@ -93,13 +93,13 @@ type TypeMap = {
     [Type.Array]: never;
 }
 
-type InferFromSchema<R> = {
+type TypeFromSchema<R> = {
     // Optional properties
     [K in keyof R as R[K] extends { __optional: true } ? K : never]?:
         R[K] extends { field: infer U }
             ? U extends { type: infer U2, schema: infer Q }
                 ? U2 extends Type.Object
-                    ? InferFromSchema<Q>[]
+                    ? TypeFromSchema<Q>[]
                 : U2 extends FieldTypes
                     ? (TypeMap[U2])[]
                 : never
@@ -110,7 +110,7 @@ type InferFromSchema<R> = {
             : never
         : R[K] extends { type: infer U, schema: infer Q }
             ? U extends Type.Object
-                ? InferFromSchema<Q>
+                ? TypeFromSchema<Q>
             : U extends FieldTypes
                 ? TypeMap[U]
             : never
@@ -125,7 +125,7 @@ type InferFromSchema<R> = {
         R[K] extends { field: infer U }
             ? U extends { type: infer U2, schema: infer Q }
                 ? U2 extends Type.Object
-                    ? InferFromSchema<Q>[]
+                    ? TypeFromSchema<Q>[]
                 : U2 extends FieldTypes
                     ? TypeMap[U2][]
                 : never
@@ -136,7 +136,7 @@ type InferFromSchema<R> = {
             : never
         : R[K] extends { type: infer U, schema: infer Q }
             ? U extends Type.Object
-                ? InferFromSchema<Q>
+                ? TypeFromSchema<Q>
             : U extends FieldTypes
                 ? TypeMap[U]
             : never
@@ -195,7 +195,7 @@ const _objectFieldChecker = <T extends Schema>(schema: T, obj: ObjectAny, strict
                 _isArray<
                     (typeof field extends { type: infer O; schema: infer P } 
                         ? O extends Type.Object
-                            ? InferFromSchema<P>
+                            ? TypeFromSchema<P>
                         : O extends FieldTypes
                             ? TypeMap[O]
                             : never
@@ -208,7 +208,7 @@ const _objectFieldChecker = <T extends Schema>(schema: T, obj: ObjectAny, strict
                 throw new Error(`Unknown type for schema key ${key}`);
         }
     }
-    return obj as InferFromSchema<T>;
+    return obj as TypeFromSchema<T>;
 }
 
 
@@ -222,7 +222,7 @@ class Validator<T extends Schema> {
 
     public static validate<T extends Schema>(schema: T, obj: ObjectAny, strict: boolean = false) {
         try {
-            return _checkObject<InferFromSchema<T>>(obj, (o) => _objectFieldChecker(schema, o, strict));
+            return _checkObject<TypeFromSchema<T>>(obj, (o) => _objectFieldChecker(schema, o, strict));
         } catch (error) {
             if (isFieldValidationError(error)) {
                 throw new ValidationError(error);
@@ -235,14 +235,14 @@ class Validator<T extends Schema> {
         this.schema = schema;
     }
 
-    public validate(obj: ObjectAny, strict: boolean = false): InferFromSchema<T> {
+    public validate(obj: ObjectAny, strict: boolean = false): TypeFromSchema<T> {
         return Validator.validate(this.schema, obj, strict);
     }
 }
 
 export {
     Validator,
-    InferFromSchema,
+    TypeFromSchema,
     objectField,
     field,
     arrayField,

@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { Validator, field, objectField, arrayField, Type, InferFromSchema } from "../src/index.js";
+import { Validator, field, objectField, arrayField, Type, TypeFromSchema } from "../src/index.js";
 import { FieldTypeMismatchError, UnexpectedFieldError, ValidationError } from "../src/error.js";
 
 describe("typescript-validator", () => {
-  it("should infer types correctly with InferFromSchema", () => {
+  it("should infer types correctly with TypeFromSchema", () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const schema = {
       a: field(Type.String),
@@ -26,7 +26,7 @@ describe("typescript-validator", () => {
 
     // Type assertion: should not error
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _assert: InferFromSchema<typeof schema> = {} as Expected;
+    const _assert: TypeFromSchema<typeof schema> = {} as Expected;
   });
 
   it("should validate simple flat objects", () => {

@@ -17,7 +17,7 @@ npm install typescript-type-validator
 ### 1. Define a Schema
 
 ```typescript
-import { field, objectField, arrayField, Type, Validator, InferFromSchema } from "typescript-type-validator";
+import { field, objectField, arrayField, Type, Validator, TypeFromSchema } from "typescript-type-validator";
 
 // Define a schema for your data
 const userSchema = {
@@ -40,8 +40,8 @@ const userSchema = {
 ## 2. Get Inferred Type
 
 ```typescript
-// InferFromSchema gives you the TypeScript type for your schema
-type User = InferFromSchema<typeof userSchema>;
+// TypeFromSchema gives you the TypeScript type for your schema
+type User = TypeFromSchema<typeof userSchema>;
 // User is:
 // {
 //   id: number;
@@ -110,5 +110,5 @@ const validUser = userValidator.validate({
 **Exports available:**
 - `field`, `objectField`, `arrayField` — for schema definition
 - `Type` — enum for field types
-- `InferFromSchema` — type inference from schema
+- `TypeFromSchema` — type inference from schema
 - `Validator` — class and static method for validation
