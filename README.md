@@ -46,7 +46,7 @@ const userSchema = {
   customId: customField((val) => {
     if (typeof val !== "string" || !val.startsWith("user_")) throw new Error("customId must start with 'user_'");
     return val as `user_${string}`;
-  }),
+  }, true),
 } as const;
 ```
 
@@ -63,7 +63,7 @@ type User = TypeFromSchema<typeof userSchema>;
 //   profile: { age: number; verified?: boolean };
 //   tags: string[];
 //   posts?: { title: string; content: string; published?: boolean }[];
-//   customId: `user_${string}`; // inferred from the custom field
+//   customId?: `user_${string}`; // inferred from the custom field
 // }
 ```
 
