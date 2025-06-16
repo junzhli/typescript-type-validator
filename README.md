@@ -25,7 +25,7 @@ npm install typescript-type-validator
 ### 1. Define a Schema
 
 ```typescript
-import { field, objectField, arrayField, Type, Validator, TypeFromSchema } from "typescript-type-validator";
+import { field, objectField, arrayField, customField, Type, Validator, TypeFromSchema } from "typescript-type-validator";
 
 // Define a schema for your data
 const userSchema = {
@@ -42,6 +42,11 @@ const userSchema = {
     content: field(Type.String),
     published: field(Type.Bool, true),
   }), true), // optional array of objects
+  // Custom field: must be a string that starts with "user_"
+  customId: customField((val) => {
+    if (typeof val !== "string" || !val.startsWith("user_")) throw new Error("customId must start with 'user_'");
+    return val as `user_${string}`;
+  }),
 } as const;
 ```
 
@@ -58,6 +63,7 @@ type User = TypeFromSchema<typeof userSchema>;
 //   profile: { age: number; verified?: boolean };
 //   tags: string[];
 //   posts?: { title: string; content: string; published?: boolean }[];
+//   customId: `user_${string}`; // inferred from the custom field
 // }
 ```
 
