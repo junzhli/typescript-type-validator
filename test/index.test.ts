@@ -1,25 +1,33 @@
 import { describe, it, expect } from "vitest";
-import { Validator, field, objectField, arrayField, Type, TypeFromSchema } from "../src/index.js";
+import { Validator, field, objectField, arrayField, Type, TypeFromSchema, customField } from "../src/index.js";
 import { FieldTypeMismatchError, UnexpectedFieldError, ValidationError } from "../src/error.js";
 
 describe("typescript-validator", () => {
   it("should infer types correctly with TypeFromSchema", () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const schema = {
+      custom: customField(() => { return true as const;  }),
+      optionalCustom: customField(() => { return true as const;  }, true),
+      customArray: arrayField(customField(() => { return true as const;  })),
+      optionalArray: arrayField(customField(() => { return true as const;  }), true),
       a: field(Type.String),
       b: field(Type.Number, true),
       c: objectField({
         d: field(Type.Bool),
         e: field(Type.String, true),
+        customField: customField(() => { return true as const;  }),
+        optionalCustomField: customField(() => { return true as const;  }, true),
       }),
       f: arrayField(field(Type.Number)),
       g: arrayField(objectField({ h: field(Type.String) }), true),
     } as const;
 
     type Expected = {
+      custom: true;
+      customArray: true[];
       a: string;
       b?: number;
-      c: { d: boolean; e?: string };
+      c: { d: boolean; e?: string, customField: true };
       f: number[];
       g?: { h: string }[];
     };
