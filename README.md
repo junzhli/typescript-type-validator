@@ -115,7 +115,7 @@ const validUser = userValidator.validate({
 
 ## 6. Custom Type Field Validation
 
-You can define custom fields using your own resolver functions. The resolver receives the input value and must return the (possibly validated or transformed) value. The return type will be inferred automatically.
+You can define custom fields using your own resolver functions. The resolver receives the input value and must return the validated value. The return type will be inferred automatically.
 
 ```typescript
 import { customField, Validator, TypeFromSchema } from "typescript-type-validator";
