@@ -1,4 +1,5 @@
 # Typescript type validator
+![NPM Version](https://img.shields.io/npm/v/typescript-type-validator)
 
 A fully TypeScript-supported type validator that enables type checks at both transpile time and runtime using a flexible schema and input validation.
 
