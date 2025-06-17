@@ -1,6 +1,6 @@
 {
   "name": "typescript-type-validator",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Typescript-first type validator",
   "author": {
     "name": "Jeremy Li"
