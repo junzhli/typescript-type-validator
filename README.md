@@ -1,5 +1,5 @@
 # Typescript type validator
-![NPM Version](https://img.shields.io/npm/v/typescript-type-validator)
+[![NPM Version](https://img.shields.io/npm/v/typescript-type-validator)](https://www.npmjs.com/package/typescript-type-validator)
 [![Build the project](https://github.com/junzhli/typescript-type-validator/actions/workflows/build.yaml/badge.svg?branch=main)](https://github.com/junzhli/typescript-type-validator/actions/workflows/build.yaml)
 
 A fully TypeScript-supported type validator that enables type checks at both transpile time and runtime using a flexible schema and input validation.
