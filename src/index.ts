@@ -216,7 +216,8 @@ const _fieldChecker = <T extends Schema>(value: unknown, key: string, type: Type
     }
 }
 
-type ObjectAny = { [key: string]: unknown };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ObjectAny = any;
 
 const _objectFieldChecker = <T extends Schema>(schema: T, obj: ObjectAny, strict: boolean = false, rootKey?: string) => {
     if (strict) {
