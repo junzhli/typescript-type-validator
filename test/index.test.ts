@@ -211,4 +211,33 @@ describe("typescript-validator", () => {
     expect(Validator.validate(schema, { a: "test" }, {})).toEqual({ a: "test" });
     expect(Validator.validate(schema, { a: "test" })).toEqual({ a: "test" });
   });
+
+  it("should enforce proper return types in customField", () => {
+    // Valid: concrete return type
+    const validSchema = {
+      userId: customField((val) => {
+        if (typeof val !== "string" || !val.startsWith("user_")) {
+          throw new Error("Invalid user ID");
+        }
+        return val as `user_${string}`; // concrete type
+      }),
+      count: customField((val) => {
+        if (typeof val !== "number" || val < 0) {
+          throw new Error("Invalid count");
+        }
+        return val; // number type
+      }),
+    } as const;
+
+    type ValidType = TypeFromSchema<typeof validSchema>;
+    // ValidType should be: { userId: `user_${string}`; count: number }
+
+    const validData = { userId: "user_123", count: 5 };
+    expect(Validator.validate(validSchema, validData)).toEqual(validData);
+
+    // Test type inference works correctly
+    const result = Validator.validate(validSchema, validData);
+    expect(typeof result.userId).toBe("string");
+    expect(typeof result.count).toBe("number");
+  });
 });
