@@ -8,11 +8,9 @@ A fully TypeScript-supported type validator that enables type checks at both tra
 * Type-Safe Schema Definition
 * Automatic Type Inference
 * Runtime Validation
-* Optional Field Configuration with `fieldOptions`
 * Nested Objects and Arrays
 * Reusable Validators
 * Flexible Validation Options (`ValidateOptions`)
-* Strict Mode Validation with Enhanced Error Context
 * Custom Type Field Validation
 
 ## Installation

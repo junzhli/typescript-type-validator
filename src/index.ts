@@ -50,6 +50,7 @@ export enum Type {
 }
 
 type NotVoid<T> = Exclude<T, void>;
+type ValidResolverReturn<T> = T extends void ? never : unknown extends T ? never : T;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Resolver<T extends NotVoid<any>> = (val: unknown, key: string) => T;
@@ -72,9 +73,9 @@ type OptionalArray<T extends FieldTypesWithObjectAndCustom, U extends Schema = n
 type RequiredArray<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { fieldOptions: { optional: false }; type: Type.Array, field: Required<T, U, X> };
 type ArrayField<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { fieldOptions: { optional: boolean }; type: Type.Array, field: Required<T, U, X> };
 
-function customField<X extends Resolver<unknown>>(resolver: X, fieldOptions: { optional: true }): Optional<Type.Custom, never, X>;
-function customField<X extends Resolver<unknown>>(resolver: X, fieldOptions?: { optional?: false }): Required<Type.Custom, never, X>;
-function customField<X extends Resolver<unknown>>(resolver: X, fieldOptions: FieldOptions = {}): Field<Type.Custom, never, X> {
+function customField<T>(resolver: (val: unknown, key: string) => ValidResolverReturn<T>, fieldOptions: { optional: true }): Optional<Type.Custom, never, Resolver<ValidResolverReturn<T>>>;
+function customField<T>(resolver: (val: unknown, key: string) => ValidResolverReturn<T>, fieldOptions?: { optional?: false }): Required<Type.Custom, never, Resolver<ValidResolverReturn<T>>>;
+function customField<T>(resolver: (val: unknown, key: string) => ValidResolverReturn<T>, fieldOptions: FieldOptions = {}): Field<Type.Custom, never, Resolver<ValidResolverReturn<T>>> {
     const finalOptions = { optional: false, ...fieldOptions };
     return { fieldOptions: finalOptions, type: Type.Custom, schema: undefined as never, resolver };
 }
