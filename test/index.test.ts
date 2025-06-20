@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Validator, field, objectField, arrayField, Type, TypeFromSchema, customField } from "../src/index.js";
+import { Validator, field, objectField, arrayField, Type, TypeFromSchema, customField, ValidateOptions } from "../src/index.js";
 import { FieldTypeMismatchError, UnexpectedFieldError, ValidationError } from "../src/error.js";
 
 describe("typescript-validator", () => {
@@ -7,19 +7,19 @@ describe("typescript-validator", () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const schema = {
       custom: customField(() => { return true as const;  }),
-      optionalCustom: customField(() => { return true as const;  }, true),
+      optionalCustom: customField(() => { return true as const;  }, { optional: true }),
       customArray: arrayField(customField(() => { return true as const;  })),
-      optionalArray: arrayField(customField(() => { return true as const;  }), true),
+      optionalArray: arrayField(customField(() => { return true as const;  }), { optional: true }),
       a: field(Type.String),
-      b: field(Type.Number, true),
+      b: field(Type.Number, { optional: true }),
       c: objectField({
         d: field(Type.Bool),
-        e: field(Type.String, true),
+        e: field(Type.String, { optional: true }),
         customField: customField(() => { return true as const;  }),
-        optionalCustomField: customField(() => { return true as const;  }, true),
+        optionalCustomField: customField(() => { return true as const;  }, { optional: true }),
       }),
       f: arrayField(field(Type.Number)),
-      g: arrayField(objectField({ h: field(Type.String) }), true),
+      g: arrayField(objectField({ h: field(Type.String) }), { optional: true }),
     } as const;
 
     type Expected = {
@@ -40,7 +40,7 @@ describe("typescript-validator", () => {
   it("should validate simple flat objects", () => {
     const schema = {
       a: field(Type.String),
-      b: field(Type.Number, true),
+      b: field(Type.Number, { optional: true }),
       c: field(Type.Bool),
     } as const;
 
@@ -78,7 +78,7 @@ describe("typescript-validator", () => {
       a: field(Type.String),
       b: objectField({
         c: field(Type.Number),
-        d: field(Type.Bool, true),
+        d: field(Type.Bool, { optional: true }),
       }),
     } as const;
 
@@ -103,7 +103,7 @@ describe("typescript-validator", () => {
   it("should validate arrays of primitives and objects", () => {
     const schema = {
       a: arrayField(field(Type.String)),
-      b: arrayField(objectField({ c: field(Type.Number) }), true),
+      b: arrayField(objectField({ c: field(Type.Number) }), { optional: true }),
     } as const;
 
     const valid = { a: ["x", "y"], b: [{ c: 1 }, { c: 2 }] };
@@ -139,11 +139,11 @@ describe("typescript-validator", () => {
     } as const;
 
     const valid = { a: "foo" };
-    expect(Validator.validate(schema, valid, true)).toEqual(valid);
+    expect(Validator.validate(schema, valid, { strict: true })).toEqual(valid);
 
     // Unexpected field
     try {
-        Validator.validate(schema, { a: "foo", b: 1 }, true);
+        Validator.validate(schema, { a: "foo", b: 1 }, { strict: true });
         throw new Error("Expected validation to fail");
     } catch (e) {
         expect(e).toBeInstanceOf(ValidationError);
@@ -160,5 +160,55 @@ describe("typescript-validator", () => {
       expect(e).toBeInstanceOf(ValidationError);
       expect(e.error).toBeInstanceOf(FieldTypeMismatchError);
     }
+  });
+
+  it("should work with ValidateOptions object", () => {
+    const schema = {
+      a: field(Type.String),
+      b: field(Type.Number, { optional: true }),
+    } as const;
+
+    const options: ValidateOptions = { strict: true };
+    const valid = { a: "foo" };
+    expect(Validator.validate(schema, valid, options)).toEqual(valid);
+
+    // Test strict mode with ValidateOptions
+    try {
+      Validator.validate(schema, { a: "foo", unexpected: "field" }, options);
+      throw new Error("Expected validation to fail");
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e.error).toBeInstanceOf(UnexpectedFieldError);
+    }
+  });
+
+  it("should prepend rootKey to error paths", () => {
+    const schema = {
+      user: objectField({
+        name: field(Type.String),
+        age: field(Type.Number),
+      }),
+    } as const;
+
+    const options: ValidateOptions = { rootKey: "request.body" };
+    
+    try {
+      Validator.validate(schema, { user: { name: "John", age: "invalid" } }, options);
+      throw new Error("Expected validation to fail");
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e.error).toBeInstanceOf(FieldTypeMismatchError);
+      expect(e.error.key).toBe("request.body.user.age");
+    }
+  });
+
+  it("should work with ValidateOptions defaults", () => {
+    const schema = { a: field(Type.String) } as const;
+    
+    // Test with explicit options
+    expect(Validator.validate(schema, { a: "test" }, { strict: true })).toEqual({ a: "test" });
+    expect(Validator.validate(schema, { a: "test" }, { strict: false })).toEqual({ a: "test" });
+    expect(Validator.validate(schema, { a: "test" }, {})).toEqual({ a: "test" });
+    expect(Validator.validate(schema, { a: "test" })).toEqual({ a: "test" });
   });
 });

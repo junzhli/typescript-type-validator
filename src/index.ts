@@ -54,41 +54,52 @@ type NotVoid<T> = Exclude<T, void>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Resolver<T extends NotVoid<any>> = (val: unknown, key: string) => T;
 
+type FieldOptions = { optional?: boolean };
+
+type ValidateOptions = { 
+    strict?: boolean; 
+    rootKey?: string; 
+};
+
 type FieldTypesWithObjectAndCustom = FieldTypes | Type.Object | Type.Custom;
 
-type Optional<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { __optional: true; type: T, schema: U, resolver: X }
-type Required<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { __optional: false; type: T; schema: U, resolver: X }
-type Field<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { __optional: boolean; type: T; schema: U, resolver: X }
+type Optional<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { fieldOptions: { optional: true }; type: T, schema: U, resolver: X }
+type Required<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { fieldOptions: { optional: false }; type: T; schema: U, resolver: X }
+type Field<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { fieldOptions: { optional: boolean }; type: T; schema: U, resolver: X }
 
 
-type OptionalArray<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { __optional: true; type: Type.Array, field: Required<T, U, X> };
-type RequiredArray<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { __optional: false; type: Type.Array, field: Required<T, U, X> };
-type ArrayField<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { __optional: boolean; type: Type.Array, field: Required<T, U, X> };
+type OptionalArray<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { fieldOptions: { optional: true }; type: Type.Array, field: Required<T, U, X> };
+type RequiredArray<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { fieldOptions: { optional: false }; type: Type.Array, field: Required<T, U, X> };
+type ArrayField<T extends FieldTypesWithObjectAndCustom, U extends Schema = never, X extends Resolver<unknown> = never> = { fieldOptions: { optional: boolean }; type: Type.Array, field: Required<T, U, X> };
 
-function customField<X extends Resolver<unknown>>(resolver: X, optional: true): Optional<Type.Custom, never, X>;
-function customField<X extends Resolver<unknown>>(resolver: X, optional?: false): Required<Type.Custom, never, X>;
-function customField<X extends Resolver<unknown>>(resolver: X, optional: boolean = false): Field<Type.Custom, never, X> {
-    return { __optional: optional, type: Type.Custom, schema: undefined as never, resolver };
+function customField<X extends Resolver<unknown>>(resolver: X, fieldOptions: { optional: true }): Optional<Type.Custom, never, X>;
+function customField<X extends Resolver<unknown>>(resolver: X, fieldOptions?: { optional?: false }): Required<Type.Custom, never, X>;
+function customField<X extends Resolver<unknown>>(resolver: X, fieldOptions: FieldOptions = {}): Field<Type.Custom, never, X> {
+    const finalOptions = { optional: false, ...fieldOptions };
+    return { fieldOptions: finalOptions, type: Type.Custom, schema: undefined as never, resolver };
 }
 
 type FieldTypes = Type.Bool | Type.Number | Type.String;
 
-function field<T extends FieldTypes>(type: T, optional?: false): Required<T>;
-function field<T extends FieldTypes>(type: T, optional: true): Optional<T>;
-function field<T extends FieldTypes>(type: T, optional: boolean = false): Field<T> {
-    return { __optional: optional, type, schema: undefined as never, resolver: undefined as never };
+function field<T extends FieldTypes>(type: T, fieldOptions: { optional: true }): Optional<T>;
+function field<T extends FieldTypes>(type: T, fieldOptions?: { optional?: false }): Required<T>;
+function field<T extends FieldTypes>(type: T, fieldOptions: FieldOptions = {}): Field<T> {
+    const finalOptions = { optional: false, ...fieldOptions };
+    return { fieldOptions: finalOptions, type, schema: undefined as never, resolver: undefined as never };
 }
 
-function objectField<T extends Schema>(schema: T, optional?: false): Required<Type.Object, T>;
-function objectField<T extends Schema>(schema: T, optional: true): Optional<Type.Object, T>;
-function objectField<T extends Schema>(schema: T, optional: boolean = false): Field<Type.Object, T> {
-    return { __optional: optional, type: Type.Object, schema, resolver: undefined as never };
+function objectField<T extends Schema>(schema: T, fieldOptions: { optional: true }): Optional<Type.Object, T>;
+function objectField<T extends Schema>(schema: T, fieldOptions?: { optional?: false }): Required<Type.Object, T>;
+function objectField<T extends Schema>(schema: T, fieldOptions: FieldOptions = {}): Field<Type.Object, T> {
+    const finalOptions = { optional: false, ...fieldOptions };
+    return { fieldOptions: finalOptions, type: Type.Object, schema, resolver: undefined as never };
 }
 
-function arrayField<V extends Schema, U extends FieldTypesWithObjectAndCustom, X extends Resolver<unknown>, T extends Required<U, V, X>>(field: T, optional: true): OptionalArray<T["type"], T["schema"], T["resolver"]>;
-function arrayField<V extends Schema, U extends FieldTypesWithObjectAndCustom, X extends Resolver<unknown>, T extends Required<U, V, X>>(field: T, optional?: false): RequiredArray<T["type"], T["schema"], T["resolver"]>;
-function arrayField<V extends Schema, U extends FieldTypesWithObjectAndCustom, X extends Resolver<unknown>, T extends Required<U, V, X>>(field: T, optional: boolean = false): ArrayField<T["type"], T["schema"], T["resolver"]> {
-    return { __optional: optional, type: Type.Array, field };
+function arrayField<V extends Schema, U extends FieldTypesWithObjectAndCustom, X extends Resolver<unknown>, T extends Required<U, V, X>>(field: T, fieldOptions: { optional: true }): OptionalArray<T["type"], T["schema"], T["resolver"]>;
+function arrayField<V extends Schema, U extends FieldTypesWithObjectAndCustom, X extends Resolver<unknown>, T extends Required<U, V, X>>(field: T, fieldOptions?: { optional?: false }): RequiredArray<T["type"], T["schema"], T["resolver"]>;
+function arrayField<V extends Schema, U extends FieldTypesWithObjectAndCustom, X extends Resolver<unknown>, T extends Required<U, V, X>>(field: T, fieldOptions: FieldOptions = {}): ArrayField<T["type"], T["schema"], T["resolver"]> {
+    const finalOptions = { optional: false, ...fieldOptions };
+    return { fieldOptions: finalOptions, type: Type.Array, field };
 }
 
 interface Schema {
@@ -113,7 +124,7 @@ type TypeMap = {
 
 type TypeFromSchema<R> = {
     // Optional properties
-    [K in keyof R as R[K] extends { __optional: true } ? K : never]?:
+    [K in keyof R as R[K] extends { fieldOptions: { optional: true } } ? K : never]?:
         R[K] extends { field: infer U }
             ? U extends { type: infer U2, schema: infer Q, resolver: infer X }
                 ? U2 extends Type.Object
@@ -155,7 +166,7 @@ type TypeFromSchema<R> = {
             : never;
 } & {
     // Required properties
-    [K in keyof R as R[K] extends { __optional: false } ? K : never]:
+    [K in keyof R as R[K] extends { fieldOptions: { optional: false } } ? K : never]:
         R[K] extends { field: infer U }
             ? U extends { type: infer U2, schema: infer Q, resolver: infer X }
                 ? U2 extends Type.Object
@@ -229,8 +240,8 @@ const _objectFieldChecker = <T extends Schema>(schema: T, obj: ObjectAny, strict
         }
     }
     for (const key of Object.keys(schema)) {
-        const { __optional: isOptional, type } = schema[key];
-        if (isOptional === true && obj?.[key] === undefined) {
+        const { fieldOptions, type } = schema[key];
+        if (fieldOptions.optional === true && obj?.[key] === undefined) {
             continue;
         }
         const _key = rootKey ? `${rootKey}.${key}` : key;
@@ -281,9 +292,11 @@ const _checkObject = <T>(obj: ObjectAny, checker: (obj: ObjectAny) => T): T => {
 class Validator<T extends Schema> {
     private schema: T;
 
-    public static validate<T extends Schema>(schema: T, obj: ObjectAny, strict: boolean = false) {
+    public static validate<T extends Schema>(schema: T, obj: ObjectAny, options: ValidateOptions = {}): TypeFromSchema<T> {
+        const finalOptions = { strict: false, ...options };
+        
         try {
-            return _checkObject<TypeFromSchema<T>>(obj, (o) => _objectFieldChecker(schema, o, strict));
+            return _checkObject<TypeFromSchema<T>>(obj, (o) => _objectFieldChecker(schema, o, finalOptions.strict, finalOptions.rootKey));
         } catch (error) {
             if (isFieldValidationError(error)) {
                 throw new ValidationError(error);
@@ -296,14 +309,16 @@ class Validator<T extends Schema> {
         this.schema = schema;
     }
 
-    public validate(obj: ObjectAny, strict: boolean = false): TypeFromSchema<T> {
-        return Validator.validate(this.schema, obj, strict);
+    public validate(obj: ObjectAny, options: ValidateOptions = {}): TypeFromSchema<T> {
+        return Validator.validate(this.schema, obj, options);
     }
 }
 
 export {
     Validator,
     TypeFromSchema,
+    FieldOptions,
+    ValidateOptions,
     objectField,
     field,
     arrayField,
